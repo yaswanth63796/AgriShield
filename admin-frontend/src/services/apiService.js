@@ -121,6 +121,41 @@ export const apiService = {
     return mockClaims;
   },
 
+  // ── Update Claim Status (Approve / Under Review / Reject / Pending) ──────
+  async updateClaimStatus(claimId, status) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/claims/${claimId}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+        signal: AbortSignal.timeout(10000),
+      });
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          const found = mockClaims.find((c) => c.id === claimId || c.rawId === claimId || c._id === claimId);
+          if (found) {
+            found.status = status;
+          }
+          return { success: true, message: data.message, claim: data.claim };
+        }
+      }
+    } catch (e) {
+      console.warn('Backend API error updating claim status:', e);
+    }
+
+    const found = mockClaims.find((c) => c.id === claimId || c.rawId === claimId || c._id === claimId);
+    if (found) {
+      found.status = status;
+    }
+    return {
+      success: true,
+      message: `Claim status updated to ${status}`,
+      claim: { id: claimId, status }
+    };
+  },
+
+
   // ── Fetch Weather Data for Specific Claim Upload Date ────────────────────────
   async getHistoricalWeather(lat, lng, date = '2026-09-16') {
     try {

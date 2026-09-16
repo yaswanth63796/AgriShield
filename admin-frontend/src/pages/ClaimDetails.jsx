@@ -140,10 +140,46 @@ export const ClaimDetails = () => {
   const [uploadWeather, setUploadWeather] = useState(null);
   const [uploadWeatherLoading, setUploadWeatherLoading] = useState(false);
 
+  // Status Action State
+  const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [statusNotification, setStatusNotification] = useState(null);
+
+  const handleStatusChange = async (newStatus) => {
+    if (updatingStatus || !claim) return;
+    setUpdatingStatus(true);
+    setStatusNotification(null);
+
+    try {
+      const claimIdentifier = claim.rawId || claim._id || claim.id || claimId;
+      const res = await apiService.updateClaimStatus(claimIdentifier, newStatus);
+      if (res && res.success) {
+        setClaim((prev) => ({ ...prev, status: newStatus }));
+        setStatusNotification({
+          type: 'success',
+          message: `Claim status updated to ${newStatus}. Updated across Admin and Farmer Portal!`
+        });
+      } else {
+        setStatusNotification({
+          type: 'error',
+          message: res?.message || 'Failed to update claim status.'
+        });
+      }
+    } catch (err) {
+      console.error('Error changing claim status:', err);
+      setStatusNotification({
+        type: 'error',
+        message: 'An error occurred while updating status.'
+      });
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
+
   // Sentinel-2 NDVI Validation State
   const [ndviData, setNdviData] = useState(null);
   const [ndviLoading, setNdviLoading] = useState(false);
   const [ndviError, setNdviError] = useState(null);
+
 
   const handleAnalyzeNdvi = async () => {
     if (ndviLoading) return;
@@ -351,7 +387,96 @@ export const ClaimDetails = () => {
             <Badge status={claim.status || 'Pending'} />
           </div>
         </div>
+
+        {/* Claim Decision & Status Action Control Panel */}
+        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm space-y-3 mt-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-100 pb-3">
+            <div className="flex items-center space-x-2">
+              <CheckCircle2 className="w-5 h-5 text-[#15803D]" />
+              <h2 className="text-sm font-bold text-gray-900">
+                Admin Claim Decision & Status Control
+              </h2>
+            </div>
+            <span className="text-xs text-gray-500 font-medium">
+              Updating status here persists to database & updates Farmer Portal view in real time
+            </span>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3 pt-1">
+            <button
+              disabled={updatingStatus || (claim.status || '').toLowerCase() === 'approved'}
+              onClick={() => handleStatusChange('Approved')}
+              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 shadow-sm ${
+                (claim.status || '').toLowerCase() === 'approved'
+                  ? 'bg-emerald-600 text-white cursor-default ring-2 ring-emerald-400'
+                  : 'bg-emerald-50 text-emerald-800 border border-emerald-300 hover:bg-emerald-600 hover:text-white'
+              }`}
+            >
+              <CheckCircle2 className="w-4 h-4" />
+              <span>Approve Claim</span>
+            </button>
+
+            <button
+              disabled={updatingStatus || (claim.status || '').toLowerCase() === 'under review'}
+              onClick={() => handleStatusChange('Under review')}
+              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 shadow-sm ${
+                (claim.status || '').toLowerCase() === 'under review'
+                  ? 'bg-amber-500 text-white cursor-default ring-2 ring-amber-300'
+                  : 'bg-amber-50 text-amber-800 border border-amber-300 hover:bg-amber-500 hover:text-white'
+              }`}
+            >
+              <Info className="w-4 h-4" />
+              <span>Mark Under Review</span>
+            </button>
+
+            <button
+              disabled={updatingStatus || (claim.status || '').toLowerCase() === 'rejected'}
+              onClick={() => handleStatusChange('Rejected')}
+              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 shadow-sm ${
+                (claim.status || '').toLowerCase() === 'rejected'
+                  ? 'bg-red-600 text-white cursor-default ring-2 ring-red-400'
+                  : 'bg-red-50 text-red-800 border border-red-300 hover:bg-red-600 hover:text-white'
+              }`}
+            >
+              <X className="w-4 h-4" />
+              <span>Reject Claim</span>
+            </button>
+
+            <button
+              disabled={updatingStatus || (claim.status || '').toLowerCase() === 'pending'}
+              onClick={() => handleStatusChange('Pending')}
+              className={`px-4 py-2 rounded-lg text-xs font-medium transition-all flex items-center space-x-1.5 border ${
+                (claim.status || '').toLowerCase() === 'pending'
+                  ? 'bg-gray-800 text-white border-gray-800'
+                  : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'
+              }`}
+            >
+              <span>Reset to Pending</span>
+            </button>
+
+            {updatingStatus && (
+              <span className="text-xs text-amber-600 font-semibold flex items-center ml-2">
+                <Loader2 className="w-4 h-4 animate-spin mr-1 text-amber-600" />
+                Updating status...
+              </span>
+            )}
+          </div>
+
+          {statusNotification && (
+            <div className={`p-3 rounded-lg text-xs font-semibold flex items-center justify-between animate-fadeIn ${
+              statusNotification.type === 'success'
+                ? 'bg-emerald-50 text-emerald-900 border border-emerald-200'
+                : 'bg-red-50 text-red-900 border border-red-200'
+            }`}>
+              <span>{statusNotification.message}</span>
+              <button onClick={() => setStatusNotification(null)} className="text-gray-400 hover:text-gray-600 ml-2">
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
+        </div>
       </div>
+
 
       {/* 1. BOTH GPS GEOLOCATIONS SIDE-BY-SIDE */}
       <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4 shadow-sm">

@@ -6,7 +6,8 @@ const {
   getAllCrops,
   getCropById,
   getAllClaims,
-  getClaimNdviValidation
+  getClaimNdviValidation,
+  updateClaimStatus
 } = require('../controllers/adminController');
 
 // ── Admin Live MongoDB Routes ──────────────────────────────────────────────
@@ -16,5 +17,7 @@ router.get('/crops', getAllCrops);
 router.get('/crops/:id', getCropById);
 router.get('/claims', getAllClaims);
 router.get('/claims/:claimId/ndvi', getClaimNdviValidation);
+router.put('/claims/:claimId/status', updateClaimStatus);
 
 module.exports = router;
+

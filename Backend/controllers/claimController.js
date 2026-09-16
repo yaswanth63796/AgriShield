@@ -155,13 +155,50 @@ const getClaimById = async (req, res) => {
       success: true,
       claim
     });
-  } catch (error) {
-    console.error('Error fetching claim:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Server error occurred while fetching claim'
+/**
+ * @desc    Update claim status directly
+ * @route   PUT /api/claims/:id/status
+ * @access  Public / Admin
+ */
+const updateClaimStatus = async (req, res) => {
+  try {
+    const rawId = req.params.id;
+    const { status } = req.body;
+
+    if (!status) {
+      return res.status(400).json({ success: false, message: 'Status is required' });
+    }
+
+    let claim = null;
+    if (mongoose.Types.ObjectId.isValid(rawId)) {
+      claim = await Claim.findById(rawId);
+    }
+
+    if (!claim) {
+      const allClaims = await Claim.find();
+      const cleanClaimId = rawId.replace('CLM-', '').toUpperCase();
+      claim = allClaims.find(c => c._id.toString() === rawId || c._id.toString().substring(18).toUpperCase() === cleanClaimId);
+    }
+
+    if (!claim) {
+      return res.status(404).json({ success: false, message: 'Claim not found' });
+    }
+
+    const validStatuses = ['Pending', 'Under review', 'Approved', 'Rejected'];
+    const matched = validStatuses.find(s => s.toLowerCase() === status.toLowerCase());
+    claim.status = matched || status;
+    await claim.save();
+
+    return res.status(200).json({
+      success: true,
+      message: `Claim status updated to ${claim.status}`,
+      claim
     });
+  } catch (error) {
+    console.error('Error updating claim status:', error);
+    return res.status(500).json({ success: false, message: 'Server error updating claim status' });
   }
 };
 
-module.exports = { submitClaim, getMyClaims, getClaimById };
+module.exports = { submitClaim, getMyClaims, getClaimById, updateClaimStatus };
+

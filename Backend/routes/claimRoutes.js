@@ -65,4 +65,7 @@ router.get('/my-claims', protect, getMyClaims);
 // GET /api/claims/:id — Get a single claim by ID
 router.get('/:id', protect, getClaimById);
 
+// PUT /api/claims/:id/status — Update claim status (Admin/System)
+router.put('/:id/status', updateClaimStatus);
+
 module.exports = router;

@@ -601,6 +601,65 @@ const getClaimNdviValidation = async (req, res) => {
   }
 };
 
+/**
+ * @desc    Update Claim Status (Pending, Under review, Approved, Rejected)
+ * @route   PUT /api/admin/claims/:claimId/status
+ * @access  Public / Admin
+ */
+const updateClaimStatus = async (req, res) => {
+  try {
+    const { claimId } = req.params;
+    const { status } = req.body;
+
+    if (!status) {
+      return res.status(400).json({
+        success: false,
+        message: 'Status field is required'
+      });
+    }
+
+    let claim = null;
+    if (mongoose.Types.ObjectId.isValid(claimId)) {
+      claim = await Claim.findById(claimId);
+    }
+
+    if (!claim) {
+      const allClaims = await Claim.find();
+      const cleanId = claimId.replace('CLM-', '').toUpperCase();
+      claim = allClaims.find(
+        (c) =>
+          c._id.toString() === claimId ||
+          c._id.toString().substring(18).toUpperCase() === cleanId
+      );
+    }
+
+    if (!claim) {
+      return res.status(404).json({
+        success: false,
+        message: 'Claim not found'
+      });
+    }
+
+    // Standardize status format e.g. "Approved", "Under review", "Rejected", "Pending"
+    const validStatuses = ['Pending', 'Under review', 'Approved', 'Rejected'];
+    const matched = validStatuses.find(s => s.toLowerCase() === status.toLowerCase());
+    claim.status = matched || status;
+    await claim.save();
+
+    return res.status(200).json({
+      success: true,
+      message: `Claim status successfully updated to ${claim.status}`,
+      claim
+    });
+  } catch (error) {
+    console.error('Error updating claim status:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Server error updating claim status'
+    });
+  }
+};
+
 module.exports = {
   getDashboardStats,
   getAllFarmers,
@@ -608,4 +667,6 @@ module.exports = {
   getCropById,
   getAllClaims,
   getClaimNdviValidation,
+  updateClaimStatus,
 };
+
