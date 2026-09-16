@@ -1,5 +1,6 @@
 const Claim = require('../models/Claim');
 const RegisteredCrop = require('../models/RegisteredCrop');
+const mongoose = require('mongoose');
 
 /**
  * @desc    Submit a new insurance claim for a registered crop
@@ -27,7 +28,16 @@ const submitClaim = async (req, res) => {
     }
 
     // Verify crop exists
-    const crop = await RegisteredCrop.findById(cropId);
+    let crop = null;
+    if (mongoose.Types.ObjectId.isValid(cropId)) {
+      crop = await RegisteredCrop.findById(cropId);
+    }
+    if (!crop) {
+      const allCrops = await RegisteredCrop.find();
+      const cleanCropId = cropId.replace('CRP-', '').toUpperCase();
+      crop = allCrops.find(c => c._id.toString() === cropId || c._id.toString().substring(18).toUpperCase() === cleanCropId);
+    }
+
     if (!crop) {
       return res.status(404).json({
         success: false,
@@ -113,8 +123,18 @@ const getMyClaims = async (req, res) => {
  */
 const getClaimById = async (req, res) => {
   try {
-    const claim = await Claim.findById(req.params.id)
-      .populate('cropId', 'cropType season landAreaHectare sowingDate');
+    const rawId = req.params.id;
+    let claim = null;
+
+    if (mongoose.Types.ObjectId.isValid(rawId)) {
+      claim = await Claim.findById(rawId).populate('cropId', 'cropType season landAreaHectare sowingDate');
+    }
+
+    if (!claim) {
+      const allClaims = await Claim.find().populate('cropId', 'cropType season landAreaHectare sowingDate');
+      const cleanClaimId = rawId.replace('CLM-', '').toUpperCase();
+      claim = allClaims.find(c => c._id.toString() === rawId || c._id.toString().substring(18).toUpperCase() === cleanClaimId);
+    }
 
     if (!claim) {
       return res.status(404).json({

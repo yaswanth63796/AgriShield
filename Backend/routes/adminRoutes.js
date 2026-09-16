@@ -5,7 +5,8 @@ const {
   getAllFarmers,
   getAllCrops,
   getCropById,
-  getAllClaims
+  getAllClaims,
+  getClaimNdviValidation
 } = require('../controllers/adminController');
 
 // ── Admin Live MongoDB Routes ──────────────────────────────────────────────
@@ -14,5 +15,6 @@ router.get('/farmers', getAllFarmers);
 router.get('/crops', getAllCrops);
 router.get('/crops/:id', getCropById);
 router.get('/claims', getAllClaims);
+router.get('/claims/:claimId/ndvi', getClaimNdviValidation);
 
 module.exports = router;

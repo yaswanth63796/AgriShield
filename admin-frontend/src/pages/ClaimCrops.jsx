@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { User, Sprout, Calendar, AlertTriangle, ChevronRight } from 'lucide-react';
 import { apiService } from '../services/apiService';
 import { Badge } from '../components/Badge';
@@ -7,6 +8,7 @@ export const ClaimCrops = () => {
   const [claims, setClaims] = useState([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('All');
+  const navigate = useNavigate();
 
   const filterOptions = ['All', 'Pending', 'Under review', 'Approved', 'Rejected'];
 
@@ -29,7 +31,7 @@ export const ClaimCrops = () => {
   }, [claims, statusFilter]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-6xl mx-auto">
       {/* Subtitle */}
       <div>
         <p className="text-sm text-gray-500">Damage claims and complaints submitted by farmers</p>
@@ -65,65 +67,78 @@ export const ClaimCrops = () => {
           Loading claims and complaints...
         </div>
       ) : (
-        /* Vertical Stacked List of Claims (Full-Width Cards) */
+        /* Vertical Stacked List of Claims */
         <div className="space-y-4">
-          {filteredClaims.map((claim) => (
-            <div
-              key={claim.id || claim._id || claim.rawId}
-              className="bg-white rounded-lg border border-gray-200 p-6 space-y-4 shadow-sm hover:border-[#15803D] transition-all"
-            >
-              {/* Top Header Row */}
-              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
-                <div className="space-y-1">
-                  <div className="flex items-center space-x-3">
-                    <h3 className="text-base font-semibold text-gray-900">{claim.name}</h3>
+          {filteredClaims.map((claim) => {
+            const cropNameVal = claim.cropType || claim.cropName || 'Paddy';
+            const seasonVal = claim.season || 'Kharif';
+            const damageVal = claim.damageType || claim.name || 'Heavy Rain';
+
+            return (
+              <div
+                key={claim.id || claim._id || claim.rawId}
+                className="bg-white rounded-xl border border-gray-200 p-6 space-y-4 shadow-sm hover:border-[#15803D] hover:shadow-md transition-all"
+              >
+                {/* Top Header Row: Crop Name & Season & Damage Type */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-center space-x-4 flex-wrap gap-y-2">
+                    <div className="flex items-center space-x-1.5 text-sm text-gray-900 font-bold">
+                      <span className="text-xs text-gray-400 font-normal">Crop Name:</span>
+                      <span className="text-[#15803D]">{cropNameVal}</span>
+                    </div>
+
+                    <span className="text-gray-300 hidden sm:inline">•</span>
+
+                    <div className="flex items-center space-x-1.5 text-sm text-gray-900 font-bold">
+                      <span className="text-xs text-gray-400 font-normal">Season:</span>
+                      <span>{seasonVal}</span>
+                    </div>
+
+                    <span className="text-gray-300 hidden sm:inline">•</span>
+
+                    <div className="flex items-center space-x-1.5 text-sm text-gray-900 font-bold">
+                      <span className="text-xs text-gray-400 font-normal">Damage:</span>
+                      <span className="text-amber-800">{damageVal}</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <Badge status={claim.status || 'Pending'} />
                   </div>
                 </div>
-                <div>
-                  <Badge status={claim.status || 'Pending'} />
+
+                {/* Divider & Meta Bar Row (NO Description shown in List) */}
+                <div className="pt-3 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs text-gray-500">
+                  {/* Left Meta Information */}
+                  <div className="flex flex-wrap items-center gap-y-2 gap-x-4">
+                    <div className="flex items-center space-x-1.5">
+                      <User className="w-3.5 h-3.5 text-gray-400" />
+                      <span>Farmer: <strong className="font-semibold text-gray-800">{claim.farmerName}</strong></span>
+                    </div>
+                    <div className="flex items-center space-x-1.5">
+                      <Calendar className="w-3.5 h-3.5 text-gray-400" />
+                      <span>Submitted: <strong className="font-medium text-gray-800">{claim.submittedDate}</strong></span>
+                    </div>
+                    <div className="flex items-center space-x-1.5">
+                      <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
+                      <span>Est. Loss: <strong className="font-bold text-amber-700">{claim.estimatedLossPercent || 65}%</strong></span>
+                    </div>
+                  </div>
+
+                  {/* Right Action Button -> Navigates to dedicated /claims/:claimId review tab */}
+                  <div className="flex items-center justify-end">
+                    <button
+                      onClick={() => navigate(`/claims/${claim.rawId || claim._id || claim.id}`)}
+                      className="inline-flex items-center space-x-1 px-4 py-2 text-xs font-bold text-white bg-[#15803D] hover:bg-[#166534] rounded-lg shadow-sm transition-all"
+                    >
+                      <span>Review Claim</span>
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               </div>
-
-              {/* Claim Description — Main Paragraph Content */}
-              <p className="text-sm text-gray-600 leading-relaxed bg-gray-50/70 p-4 rounded-lg border border-gray-100 italic">
-                "{claim.description}"
-              </p>
-
-              {/* Thin Divider & Meta Row */}
-              <div className="pt-3 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs text-gray-500">
-                {/* Left Meta Information */}
-                <div className="flex flex-wrap items-center gap-y-2 gap-x-4">
-                  <div className="flex items-center space-x-1.5">
-                    <User className="w-3.5 h-3.5 text-gray-400" />
-                    <span>Farmer: <strong className="font-medium text-gray-800">{claim.farmerName}</strong></span>
-                  </div>
-                  <div className="flex items-center space-x-1.5">
-                    <Sprout className="w-3.5 h-3.5 text-gray-400" />
-                    <span>Crop: <strong className="font-medium text-gray-800">{claim.cropName}</strong></span>
-                  </div>
-                  <div className="flex items-center space-x-1.5">
-                    <Calendar className="w-3.5 h-3.5 text-gray-400" />
-                    <span>Submitted: <strong className="font-medium text-gray-800">{claim.submittedDate}</strong></span>
-                  </div>
-                  <div className="flex items-center space-x-1.5">
-                    <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
-                    <span>Est. Loss: <strong className="font-bold text-amber-700">{claim.estimatedLossPercent || 60}%</strong></span>
-                  </div>
-                </div>
-
-                {/* Right Action Button */}
-                <div className="flex items-center justify-end">
-                  <button
-                    onClick={() => alert(`Reviewing claim for ${claim.farmerName}`)}
-                    className="inline-flex items-center space-x-1 font-medium text-[#15803D] hover:text-[#166534] transition-colors"
-                  >
-                    <span>View details</span>
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
+            );
+          })}
 
           {filteredClaims.length === 0 && (
             <div className="bg-white rounded-lg border border-gray-200 p-12 text-center text-sm text-gray-500">

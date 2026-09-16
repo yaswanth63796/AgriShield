@@ -3,6 +3,7 @@ const User = require('../models/User');
 const RegisteredCrop = require('../models/RegisteredCrop');
 const Claim = require('../models/Claim');
 const Scheme = require('../models/Scheme');
+const ndviService = require('../services/ndviService');
 
 /**
  * @desc    Get Admin Dashboard Stats & Live MongoDB System Details
@@ -119,6 +120,62 @@ const getAllFarmers = async (req, res) => {
 };
 
 /**
+ * Dynamic Reverse Geocoding helper to resolve Village, District, and Region Name
+ * from actual Latitude & Longitude coordinates.
+ */
+const resolveLocationDetails = (latVal, lngVal) => {
+  const lat = parseFloat(latVal);
+  const lng = parseFloat(lngVal);
+
+  if (isNaN(lat) || isNaN(lng)) {
+    return {
+      village: 'Coimbatore',
+      district: 'Coimbatore',
+      regionName: 'Coimbatore Region, Coimbatore District, Tamil Nadu (641001)',
+      pincode: '641001'
+    };
+  }
+
+  // Check Coimbatore Range (Lat ~ 10.70 to 11.30, Lng ~ 76.70 to 77.25)
+  if (lat >= 10.70 && lat <= 11.30 && lng >= 76.70 && lng <= 77.25) {
+    return {
+      village: 'Coimbatore',
+      district: 'Coimbatore',
+      regionName: 'Coimbatore Region, Coimbatore District, Tamil Nadu (641001)',
+      pincode: '641001'
+    };
+  }
+
+  // Check Tiruvarur Range (Lat ~ 10.60 to 10.95, Lng ~ 79.00 to 79.60)
+  if (lat >= 10.60 && lat <= 10.95 && lng >= 79.00 && lng <= 79.60) {
+    return {
+      village: 'Thiruvarur',
+      district: 'Tiruvarur',
+      regionName: 'Thiruvarur Region, Tiruvarur District, Tamil Nadu (610001)',
+      pincode: '610001'
+    };
+  }
+
+  // Check Chennai Range (Lat ~ 12.80 to 13.30, Lng ~ 80.00 to 80.40)
+  if (lat >= 12.80 && lat <= 13.30 && lng >= 80.00 && lng <= 80.40) {
+    return {
+      village: 'Chennai',
+      district: 'Chennai',
+      regionName: 'Chennai Region, Chennai District, Tamil Nadu (600001)',
+      pincode: '600001'
+    };
+  }
+
+  // Generic dynamic fallback
+  return {
+    village: `Location (${lat.toFixed(2)}°, ${lng.toFixed(2)}°)`,
+    district: 'Tamil Nadu',
+    regionName: `Region ${lat.toFixed(4)}° N, ${lng.toFixed(4)}° E, Tamil Nadu`,
+    pincode: '600000'
+  };
+};
+
+/**
  * Helper to build crop detail object from MongoDB model
  */
 const formatCropDocument = (c, index) => {
@@ -154,24 +211,40 @@ const formatCropDocument = (c, index) => {
     'Photo 4: Growth Stage Inspection'
   ];
 
-  // Build exact 4 photo entries
+  // Build exact 4 photo entries using user-uploaded photos stored in DB
   const baselineImages = [0, 1, 2, 3].map((idx) => {
     const rawPhoto = photosFromDB[idx];
     let photoUrl = defaultCropImages[idx];
-    if (rawPhoto && typeof rawPhoto === 'string' && rawPhoto.startsWith('http')) {
-      photoUrl = rawPhoto;
+    let isUserUploaded = false;
+
+    if (rawPhoto && typeof rawPhoto === 'string' && rawPhoto.trim().length > 0) {
+      if (
+        rawPhoto.startsWith('data:image') ||
+        rawPhoto.startsWith('http://') ||
+        rawPhoto.startsWith('https://') ||
+        rawPhoto.startsWith('/uploads')
+      ) {
+        photoUrl = rawPhoto;
+        isUserUploaded = true;
+      }
     }
+
     return {
       url: photoUrl,
+      isUserUploaded,
       date: formattedSowingDate,
       label: photoLabels[idx],
-      cameraTag: 'Camera System (Mobile Web)',
+      cameraTag: isUserUploaded ? 'User Uploaded (Mobile Camera)' : 'Camera System (Mobile Web)',
       photoIndex: idx + 1
     };
   });
 
-  const lat = c.latitude ? Number(c.latitude).toFixed(6) : '10.827403';
-  const lng = c.longitude ? Number(c.longitude).toFixed(6) : '77.060088';
+  const latNum = c.latitude !== undefined && c.latitude !== null ? Number(c.latitude) : 11.0045;
+  const lngNum = c.longitude !== undefined && c.longitude !== null ? Number(c.longitude) : 76.9616;
+  const lat = latNum.toFixed(6);
+  const lng = lngNum.toFixed(6);
+
+  const locInfo = resolveLocationDetails(latNum, lngNum);
 
   return {
     id: cleanCropId,
@@ -182,11 +255,11 @@ const formatCropDocument = (c, index) => {
     farmerId: userObj ? `FRM-${userObj._id.toString().substring(18).toUpperCase()}` : `FRM-${hexSuffix}`,
     farmerName,
     farmerPhone: `+91 98421 ${hexSuffix.substring(0, 5)}`,
-    village: 'Thiruvarur',
-    district: 'Tiruvarur',
-    regionName: 'Thiruvarur Region, Tiruvarur District, Tamil Nadu (610001)',
+    village: locInfo.village,
+    district: locInfo.district,
+    regionName: locInfo.regionName,
     state: 'Tamil Nadu',
-    pincode: '610001',
+    pincode: locInfo.pincode,
     aadhaarMasked: `XXXX XXXX ${hexSuffix.substring(0, 4)}`,
     bankMasked: `SBI •••• ${hexSuffix.substring(2, 6)}`,
     areaInsured: `${area} ha`,
@@ -252,11 +325,18 @@ const getAllCrops = async (req, res) => {
  */
 const getCropById = async (req, res) => {
   try {
-    let crop = await RegisteredCrop.findById(req.params.id).populate('userId', 'username email');
+    const rawId = req.params.id;
+    let crop = null;
+
+    if (mongoose.Types.ObjectId.isValid(rawId)) {
+      crop = await RegisteredCrop.findById(rawId).populate('userId', 'username email');
+    }
+
     if (!crop) {
       // Fallback search by rawId or clean id suffix
       const all = await RegisteredCrop.find().populate('userId', 'username email');
-      crop = all.find(c => c._id.toString().substring(18).toUpperCase() === req.params.id.replace('CRP-', '') || c._id.toString() === req.params.id);
+      const cleanId = rawId.replace('CRP-', '').toUpperCase();
+      crop = all.find(c => c._id.toString().substring(18).toUpperCase() === cleanId || c._id.toString() === rawId);
     }
 
     if (!crop) {
@@ -300,7 +380,7 @@ const getAllClaims = async (req, res) => {
   try {
     const claims = await Claim.find()
       .populate('userId', 'username email')
-      .populate('cropId', 'cropType season landAreaHectare')
+      .populate('cropId', 'cropType season landAreaHectare sowingDate latitude longitude photoUrl photoUrls')
       .sort({ createdAt: -1 });
 
     const formattedClaims = claims.map((cl) => {
@@ -312,11 +392,105 @@ const getAllClaims = async (req, res) => {
       const formattedSubmitDate = `${submitDate.getFullYear()}-${String(submitDate.getMonth() + 1).padStart(2, '0')}-${String(submitDate.getDate()).padStart(2, '0')}`;
       const cleanClaimId = `CLM-${cl._id.toString().substring(18).toUpperCase()}`;
 
+      // Coordinates
+      const regLatNum = cropObj && cropObj.latitude !== undefined && cropObj.latitude !== null ? Number(cropObj.latitude) : 11.0045;
+      const regLngNum = cropObj && cropObj.longitude !== undefined && cropObj.longitude !== null ? Number(cropObj.longitude) : 76.9616;
+      const claimLatNum = cl.latitude !== undefined && cl.latitude !== null ? Number(cl.latitude) : regLatNum + 0.0002;
+      const claimLngNum = cl.longitude !== undefined && cl.longitude !== null ? Number(cl.longitude) : regLngNum + 0.0001;
+
+      const registeredLocation = {
+        lat: regLatNum.toFixed(6),
+        lng: regLngNum.toFixed(6),
+        display: `${regLatNum.toFixed(6)}° N, ${regLngNum.toFixed(6)}° E`,
+        regionName: resolveLocationDetails(regLatNum, regLngNum).regionName,
+      };
+
+      const claimLocation = {
+        lat: claimLatNum.toFixed(6),
+        lng: claimLngNum.toFixed(6),
+        display: `${claimLatNum.toFixed(6)}° N, ${claimLngNum.toFixed(6)}° E`,
+        regionName: resolveLocationDetails(claimLatNum, claimLngNum).regionName,
+      };
+
+      // Registered crop baseline images
+      const cropPhotosFromDB = cropObj && Array.isArray(cropObj.photoUrls) && cropObj.photoUrls.length > 0
+        ? cropObj.photoUrls
+        : (cropObj && cropObj.photoUrl ? [cropObj.photoUrl] : []);
+
+      const defaultCropPhotos = [
+        'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=600&q=80',
+        'https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?auto=format&fit=crop&w=600&q=80',
+        'https://images.unsplash.com/photo-1586771107445-d3ca888129ff?auto=format&fit=crop&w=600&q=80',
+        'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?auto=format&fit=crop&w=600&q=80'
+      ];
+
+      const cropImages = [0, 1, 2, 3].map((idx) => {
+        const rawP = cropPhotosFromDB[idx];
+        let photoUrl = defaultCropPhotos[idx];
+        let isUserUploaded = false;
+        if (rawP && typeof rawP === 'string' && rawP.trim().length > 0) {
+          if (rawP.startsWith('data:image') || rawP.startsWith('http') || rawP.startsWith('/uploads')) {
+            photoUrl = rawP.startsWith('/uploads') ? `http://localhost:5000${rawP}` : rawP;
+            isUserUploaded = true;
+          }
+        }
+        return {
+          url: photoUrl,
+          isUserUploaded,
+          label: `Registered Photo ${idx + 1}`,
+          category: 'Registered Crop Baseline',
+          date: cropObj && cropObj.sowingDate ? new Date(cropObj.sowingDate).toISOString().split('T')[0] : formattedSubmitDate,
+          cameraTag: isUserUploaded ? 'User Uploaded (Registration)' : 'Camera System (Mobile Web)',
+        };
+      });
+
+      // Claim damage images
+      const rawDamagePhotos = cl.damagePhotoUrls && cl.damagePhotoUrls.length > 0
+        ? cl.damagePhotoUrls
+        : (cl.damagePhotoUrl ? [cl.damagePhotoUrl] : []);
+
+      const defaultDamagePhotos = [
+        'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=600&q=80',
+        'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=600&q=80',
+        'https://images.unsplash.com/photo-1586771107445-d3ca888129ff?auto=format&fit=crop&w=600&q=80',
+        'https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?auto=format&fit=crop&w=600&q=80'
+      ];
+
+      const damageLabels = [
+        'Photo 1: Damage Field Overview',
+        'Photo 2: Crop Loss Close-up',
+        'Photo 3: Soil & Drainage Condition',
+        'Photo 4: Loss Area Boundary'
+      ];
+
+      const damageImages = [0, 1, 2, 3].map((idx) => {
+        const rawP = rawDamagePhotos[idx];
+        let photoUrl = defaultDamagePhotos[idx];
+        let isUserUploaded = false;
+        if (rawP && typeof rawP === 'string' && rawP.trim().length > 0) {
+          if (rawP.startsWith('data:image') || rawP.startsWith('http') || rawP.startsWith('/uploads')) {
+            photoUrl = rawP.startsWith('/uploads') ? `http://localhost:5000${rawP}` : rawP;
+            isUserUploaded = true;
+          }
+        }
+        return {
+          url: photoUrl,
+          isUserUploaded,
+          label: damageLabels[idx],
+          category: 'Claim Damage Inspection',
+          date: formattedSubmitDate,
+          cameraTag: isUserUploaded ? 'User Uploaded (Damage Photo)' : 'Camera System (Mobile Web)',
+        };
+      });
+
       return {
         id: cleanClaimId,
         rawId: cl._id.toString(),
         name: `${cl.damageType} — ${cropName}`,
+        damageType: cl.damageType,
         cropId: cropObj ? `CRP-${cropObj._id.toString().substring(18).toUpperCase()}` : '',
+        cropType: cropObj ? cropObj.cropType : 'Crop',
+        season: cropObj ? cropObj.season : 'Season',
         cropName,
         farmerId: userObj ? `FRM-${userObj._id.toString().substring(18).toUpperCase()}` : '',
         farmerName,
@@ -324,7 +498,12 @@ const getAllClaims = async (req, res) => {
         description: cl.damageDescription || 'No description provided.',
         estimatedLossPercent: 65,
         submittedDate: formattedSubmitDate,
-        photos: cl.damagePhotoUrls && cl.damagePhotoUrls.length > 0 ? cl.damagePhotoUrls : (cl.damagePhotoUrl ? [cl.damagePhotoUrl] : [])
+        registeredLocation,
+        claimLocation,
+        registeredCropPhotos: cropImages,
+        damagePhotos: damageImages,
+        photos: damageImages,
+        damagePhotoUrls: rawDamagePhotos
       };
     });
 
@@ -342,10 +521,76 @@ const getAllClaims = async (req, res) => {
   }
 };
 
+/**
+ * @desc    Get Sentinel-2 Satellite NDVI Validation for a Claim
+ * @route   GET /api/admin/claims/:claimId/ndvi
+ * @access  Public / Admin
+ */
+const getClaimNdviValidation = async (req, res) => {
+  try {
+    const { claimId } = req.params;
+    const queryLat = req.query.lat;
+    const queryLng = req.query.lng;
+
+    let claim = null;
+    if (mongoose.Types.ObjectId.isValid(claimId)) {
+      claim = await Claim.findById(claimId).populate('cropId');
+    }
+
+    if (!claim) {
+      // Fallback search by rawId or clean CLM- ID
+      const allClaims = await Claim.find().populate('cropId');
+      const cleanId = claimId.replace('CLM-', '').toUpperCase();
+      claim = allClaims.find(
+        (c) =>
+          c._id.toString() === claimId ||
+          c._id.toString().substring(18).toUpperCase() === cleanId
+      );
+    }
+
+    const cropObj = claim ? claim.cropId : null;
+
+    // Live fetching coordinates: Prefer query parameters from damaged crop upload location
+    const lat = queryLat !== undefined && queryLat !== null && !isNaN(parseFloat(queryLat))
+      ? parseFloat(queryLat)
+      : (claim && claim.latitude !== undefined && claim.latitude !== null
+          ? Number(claim.latitude)
+          : (cropObj && cropObj.latitude !== undefined ? Number(cropObj.latitude) : 11.0045));
+
+    const lng = queryLng !== undefined && queryLng !== null && !isNaN(parseFloat(queryLng))
+      ? parseFloat(queryLng)
+      : (claim && claim.longitude !== undefined && claim.longitude !== null
+          ? Number(claim.longitude)
+          : (cropObj && cropObj.longitude !== undefined ? Number(cropObj.longitude) : 76.9616));
+
+    const damageDate = claim ? (claim.createdAt || (cropObj ? cropObj.sowingDate : new Date())) : new Date();
+    const cleanClaimId = claim ? `CLM-${claim._id.toString().substring(18).toUpperCase()}` : claimId;
+
+    const result = await ndviService.analyzeClaimNdvi(
+      cleanClaimId,
+      lat,
+      lng,
+      damageDate
+    );
+
+    return res.status(200).json({
+      success: true,
+      data: result
+    });
+  } catch (error) {
+    console.error('Error conducting live NDVI validation:', error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || 'Error processing live satellite NDVI data.'
+    });
+  }
+};
+
 module.exports = {
   getDashboardStats,
   getAllFarmers,
   getAllCrops,
   getCropById,
   getAllClaims,
+  getClaimNdviValidation,
 };

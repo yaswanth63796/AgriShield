@@ -10,11 +10,12 @@ import { FarmersList } from './pages/FarmersList';
 import { RegisteredCrops } from './pages/RegisteredCrops';
 import { CropDetails } from './pages/CropDetails';
 import { ClaimCrops } from './pages/ClaimCrops';
+import { ClaimDetails } from './pages/ClaimDetails';
 
 export function App() {
   return (
     <AuthProvider>
-      <Router>
+      <Router future={{ v7_relativeSplatPath: true, v7_startTransition: true }}>
         <Routes>
           {/* Public Login Route */}
           <Route path="/login" element={<Login />} />
@@ -34,6 +35,7 @@ export function App() {
             <Route path="registered-crops" element={<RegisteredCrops />} />
             <Route path="registered-crops/:cropId" element={<CropDetails />} />
             <Route path="claims" element={<ClaimCrops />} />
+            <Route path="claims/:claimId" element={<ClaimDetails />} />
           </Route>
 
           {/* Fallback Catch-All */}
