@@ -1,0 +1,230 @@
+{
+  "seasons": ["Kharif", "Rabi"],
+  "years": [2024, 2025, 2026],
+  "schemes": [
+    "Pradhan Mantri Fasal Bima Yojana (PMFBY)",
+    "Weather Based Crop Insurance Scheme (WBCIS)"
+  ],
+  "states": [
+    {
+      "state": "TAMIL NADU",
+      "districts": [
+        "Ariyalur",
+        "Chengalpattu",
+        "Chennai",
+        "Coimbatore",
+        "Cuddalore",
+        "Dharmapuri",
+        "Dindigul",
+        "Erode",
+        "Kallakurichi",
+        "Kanchipuram",
+        "Kanyakumari",
+        "Karur",
+        "Krishnagiri",
+        "Madurai",
+        "Mayiladuthurai",
+        "Nagapattinam",
+        "Namakkal",
+        "Nilgiris",
+        "Perambalur",
+        "Pudukkottai",
+        "Ramanathapuram",
+        "Ranipet",
+        "Salem",
+        "Sivaganga",
+        "Tenkasi",
+        "Thanjavur",
+        "Theni",
+        "Thiruvallur",
+        "Thiruvarur",
+        "Thoothukudi",
+        "Tiruchirappalli",
+        "Tirunelveli",
+        "Tirupathur",
+        "Tiruppur",
+        "Tiruvannamalai",
+        "Vellore",
+        "Viluppuram",
+        "Virudhunagar"
+      ]
+    }
+  ],
+  "insurance_companies": [
+    {
+      "company_id": "IC01",
+      "name": "AGRICULTURE INSURANCE COMPANY OF INDIA LTD"
+    },
+    {
+      "company_id": "IC02",
+      "name": "ICICI LOMBARD GENERAL INSURANCE CO LTD"
+    },
+    {
+      "company_id": "IC03",
+      "name": "HDFC ERGO GENERAL INSURANCE CO LTD"
+    },
+    {
+      "company_id": "IC04",
+      "name": "BAJAJ ALLIANZ GENERAL INSURANCE CO LTD"
+    },
+    {
+      "company_id": "IC05",
+      "name": "TATA AIG GENERAL INSURANCE CO LTD"
+    },
+    {
+      "company_id": "IC06",
+      "name": "UNITED INDIA INSURANCE CO LTD"
+    }
+  ],
+  "crops": [
+    { "crop_id": "C01", "name": "Paddy", "category": "Food Crop", "season": "Kharif" },
+    { "crop_id": "C02", "name": "Groundnut", "category": "Oilseed", "season": "Kharif" },
+    { "crop_id": "C03", "name": "Sugarcane", "category": "Commercial Crop", "season": "Kharif" },
+    { "crop_id": "C04", "name": "Cotton", "category": "Commercial Crop", "season": "Kharif" },
+    { "crop_id": "C05", "name": "Maize", "category": "Food Crop", "season": "Kharif" },
+    { "crop_id": "C06", "name": "Mango", "category": "Horticulture Crop", "season": "Kharif" },
+    { "crop_id": "C07", "name": "Banana", "category": "Horticulture Crop", "season": "Kharif" },
+    { "crop_id": "C08", "name": "Black Gram", "category": "Pulses", "season": "Rabi" },
+    { "crop_id": "C09", "name": "Green Gram", "category": "Pulses", "season": "Rabi" },
+    { "crop_id": "C10", "name": "Sesamum", "category": "Oilseed", "season": "Rabi" },
+    { "crop_id": "C11", "name": "Sunflower", "category": "Oilseed", "season": "Rabi" },
+    { "crop_id": "C12", "name": "Chilli", "category": "Horticulture Crop", "season": "Rabi" },
+    { "crop_id": "C13", "name": "Turmeric", "category": "Horticulture Crop", "season": "Rabi" },
+    { "crop_id": "C14", "name": "Coconut", "category": "Horticulture Crop", "season": "Rabi" }
+  ],
+  "premium_rate_by_category": {
+    "Food Crop": { "farmer_share_percent": 2.0, "label": "Kharif Food/Oilseed Crop" },
+    "Pulses": { "farmer_share_percent": 1.5, "label": "Rabi Food/Oilseed/Pulses Crop" },
+    "Oilseed": { "farmer_share_percent": 2.0, "label": "Oilseed Crop" },
+    "Commercial Crop": { "farmer_share_percent": 5.0, "label": "Annual Commercial Crop" },
+    "Horticulture Crop": { "farmer_share_percent": 5.0, "label": "Annual Horticultural Crop" }
+  },
+  "district_crop_insurance_data": [
+    {
+      "state": "TAMIL NADU",
+      "district": "Coimbatore",
+      "season": "Kharif",
+      "year": 2026,
+      "scheme": "Pradhan Mantri Fasal Bima Yojana (PMFBY)",
+      "crop": "Maize",
+      "insurance_company_id": "IC01",
+      "sum_insured_per_hectare": 45000,
+      "farmer_share_percent": 2.0,
+      "actuarial_rate_percent": 12.5,
+      "cutoff_date_actual": "31-07-2026",
+      "cutoff_date_csc": "25-07-2026",
+      "cutoff_date_aide": "25-07-2026",
+      "data_entry_date_bank": "05-08-2026",
+      "premium_debit_date_bank": "31-07-2026",
+      "challan_date_bank": "05-08-2026"
+    },
+    {
+      "state": "TAMIL NADU",
+      "district": "Kasaragod",
+      "season": "Kharif",
+      "year": 2026,
+      "scheme": "Weather Based Crop Insurance Scheme (WBCIS)",
+      "crop": "Mango",
+      "insurance_company_id": "IC01",
+      "sum_insured_per_hectare": 150000,
+      "farmer_share_percent": 5.0,
+      "actuarial_rate_percent": 55.0,
+      "cutoff_date_actual": "15-07-2026",
+      "cutoff_date_csc": "01-08-2026",
+      "cutoff_date_aide": "01-08-2026",
+      "data_entry_date_bank": "17-08-2026",
+      "premium_debit_date_bank": "31-07-2026",
+      "challan_date_bank": "17-08-2026"
+    },
+    {
+      "state": "TAMIL NADU",
+      "district": "Thanjavur",
+      "season": "Kharif",
+      "year": 2026,
+      "scheme": "Pradhan Mantri Fasal Bima Yojana (PMFBY)",
+      "crop": "Paddy",
+      "insurance_company_id": "IC02",
+      "sum_insured_per_hectare": 40000,
+      "farmer_share_percent": 2.0,
+      "actuarial_rate_percent": 10.0,
+      "cutoff_date_actual": "31-07-2026",
+      "cutoff_date_csc": "25-07-2026",
+      "cutoff_date_aide": "25-07-2026",
+      "data_entry_date_bank": "05-08-2026",
+      "premium_debit_date_bank": "31-07-2026",
+      "challan_date_bank": "05-08-2026"
+    },
+    {
+      "state": "TAMIL NADU",
+      "district": "Erode",
+      "season": "Kharif",
+      "year": 2026,
+      "scheme": "Pradhan Mantri Fasal Bima Yojana (PMFBY)",
+      "crop": "Cotton",
+      "insurance_company_id": "IC03",
+      "sum_insured_per_hectare": 55000,
+      "farmer_share_percent": 5.0,
+      "actuarial_rate_percent": 18.0,
+      "cutoff_date_actual": "31-07-2026",
+      "cutoff_date_csc": "25-07-2026",
+      "cutoff_date_aide": "25-07-2026",
+      "data_entry_date_bank": "05-08-2026",
+      "premium_debit_date_bank": "31-07-2026",
+      "challan_date_bank": "05-08-2026"
+    },
+    {
+      "state": "TAMIL NADU",
+      "district": "Salem",
+      "season": "Kharif",
+      "year": 2026,
+      "scheme": "Pradhan Mantri Fasal Bima Yojana (PMFBY)",
+      "crop": "Banana",
+      "insurance_company_id": "IC04",
+      "sum_insured_per_hectare": 125000,
+      "farmer_share_percent": 5.0,
+      "actuarial_rate_percent": 20.0,
+      "cutoff_date_actual": "31-07-2026",
+      "cutoff_date_csc": "25-07-2026",
+      "cutoff_date_aide": "25-07-2026",
+      "data_entry_date_bank": "05-08-2026",
+      "premium_debit_date_bank": "31-07-2026",
+      "challan_date_bank": "05-08-2026"
+    },
+    {
+      "state": "TAMIL NADU",
+      "district": "Tiruppur",
+      "season": "Rabi",
+      "year": 2026,
+      "scheme": "Pradhan Mantri Fasal Bima Yojana (PMFBY)",
+      "crop": "Sunflower",
+      "insurance_company_id": "IC05",
+      "sum_insured_per_hectare": 35000,
+      "farmer_share_percent": 1.5,
+      "actuarial_rate_percent": 9.5,
+      "cutoff_date_actual": "31-12-2026",
+      "cutoff_date_csc": "20-12-2026",
+      "cutoff_date_aide": "20-12-2026",
+      "data_entry_date_bank": "05-01-2027",
+      "premium_debit_date_bank": "31-12-2026",
+      "challan_date_bank": "05-01-2027"
+    },
+    {
+      "state": "TAMIL NADU",
+      "district": "Madurai",
+      "season": "Rabi",
+      "year": 2026,
+      "scheme": "Pradhan Mantri Fasal Bima Yojana (PMFBY)",
+      "crop": "Chilli",
+      "insurance_company_id": "IC06",
+      "sum_insured_per_hectare": 90000,
+      "farmer_share_percent": 5.0,
+      "actuarial_rate_percent": 22.0,
+      "cutoff_date_actual": "31-12-2026",
+      "cutoff_date_csc": "20-12-2026",
+      "cutoff_date_aide": "20-12-2026",
+      "data_entry_date_bank": "05-01-2027",
+      "premium_debit_date_bank": "31-12-2026",
+      "challan_date_bank": "05-01-2027"
+    }
+  ]
+}
