@@ -2,8 +2,9 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
-const { submitClaim, getMyClaims, getClaimById } = require('../controllers/claimController');
+const { submitClaim, getMyClaims, getClaimById, updateClaimStatus } = require('../controllers/claimController');
 const { protect } = require('../middleware/authMiddleware');
+
 
 // ── Multer configuration for damage photo uploads ──────────────────────────
 const storage = multer.diskStorage({
