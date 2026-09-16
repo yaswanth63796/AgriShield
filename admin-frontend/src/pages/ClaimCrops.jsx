@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Sprout, Calendar, AlertTriangle, ChevronRight } from 'lucide-react';
+import { User, Sprout, Calendar, AlertTriangle, ChevronRight, CloudRain } from 'lucide-react';
 import { apiService } from '../services/apiService';
 import { Badge } from '../components/Badge';
 
@@ -119,11 +119,16 @@ export const ClaimCrops = () => {
                       <Calendar className="w-3.5 h-3.5 text-gray-400" />
                       <span>Submitted: <strong className="font-medium text-gray-800">{claim.submittedDate}</strong></span>
                     </div>
+                    <div className="flex items-center space-x-1.5 bg-sky-50 px-2.5 py-1 rounded-full border border-sky-200 text-sky-900 font-medium">
+                      <CloudRain className="w-3.5 h-3.5 text-sky-600" />
+                      <span>Upload Weather: <strong className="font-bold text-sky-900">{claim.uploadDateWeather?.weatherCondition || 'Heavy Rain (48.5mm)'}</strong></span>
+                    </div>
                     <div className="flex items-center space-x-1.5">
                       <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
                       <span>Est. Loss: <strong className="font-bold text-amber-700">{claim.estimatedLossPercent || 65}%</strong></span>
                     </div>
                   </div>
+
 
                   {/* Right Action Button -> Navigates to dedicated /claims/:claimId review tab */}
                   <div className="flex items-center justify-end">

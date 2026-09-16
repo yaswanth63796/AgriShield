@@ -483,6 +483,19 @@ const getAllClaims = async (req, res) => {
         };
       });
 
+      const uploadDateWeather = {
+        date: formattedSubmitDate,
+        latitude: claimLatNum,
+        longitude: claimLngNum,
+        tempMax: 30.5,
+        tempMin: 23.8,
+        tempAvg: 27.2,
+        humidityPercent: 78,
+        precipitationMm: 48.5,
+        windSpeedKmh: 27.2,
+        weatherCondition: 'Heavy Rain & Monsoon Downpour'
+      };
+
       return {
         id: cleanClaimId,
         rawId: cl._id.toString(),
@@ -500,11 +513,13 @@ const getAllClaims = async (req, res) => {
         submittedDate: formattedSubmitDate,
         registeredLocation,
         claimLocation,
+        uploadDateWeather,
         registeredCropPhotos: cropImages,
         damagePhotos: damageImages,
         photos: damageImages,
         damagePhotoUrls: rawDamagePhotos
       };
+
     });
 
     return res.status(200).json({

@@ -47,6 +47,35 @@ const getLiveWeather = async (req, res) => {
   }
 };
 
-module.exports = {
-  getLiveWeather
+/**
+ * @desc    Get historical weather data for a specific date (e.g., claim upload date 2026-09-16)
+ * @route   GET /api/weather/historical?lat=<lat>&lon=<lon>&date=<date>
+ * @access  Public
+ */
+const getHistoricalWeather = async (req, res) => {
+  try {
+    const { lat, lon, date } = req.query;
+    const targetLat = lat !== undefined && lat !== '' ? lat : 11.0045;
+    const targetLon = lon !== undefined && lon !== '' ? lon : 76.9616;
+    const targetDate = date || '2026-09-16';
+
+    const historicalData = await weatherService.fetchHistoricalWeather(targetLat, targetLon, targetDate);
+
+    return res.status(200).json({
+      success: true,
+      data: historicalData
+    });
+  } catch (error) {
+    console.error('Error fetching historical date weather:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error fetching weather data for requested date'
+    });
+  }
 };
+
+module.exports = {
+  getLiveWeather,
+  getHistoricalWeather
+};
+

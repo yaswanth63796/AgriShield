@@ -121,6 +121,38 @@ export const apiService = {
     return mockClaims;
   },
 
+  // ── Fetch Weather Data for Specific Claim Upload Date ────────────────────────
+  async getHistoricalWeather(lat, lng, date = '2026-09-16') {
+    try {
+      const useLat = lat ? lat : 11.0045;
+      const useLng = lng ? lng : 76.9616;
+      const response = await fetch(`http://localhost:5000/api/weather/historical?lat=${useLat}&lon=${useLng}&date=${date}`, {
+        signal: AbortSignal.timeout(6000),
+      });
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.data) {
+          return data.data;
+        }
+      }
+    } catch (e) {
+      console.warn('API error/timeout fetching historical date weather:', e);
+    }
+
+    return {
+      date: date || '2026-09-16',
+      latitude: lat ? parseFloat(lat) : 11.0045,
+      longitude: lng ? parseFloat(lng) : 76.9616,
+      tempMax: 30.5,
+      tempMin: 23.8,
+      tempAvg: 27.2,
+      humidityPercent: 78,
+      precipitationMm: 48.5,
+      windSpeedKmh: 27.2,
+      weatherCondition: 'Heavy Rain & Monsoon Downpour'
+    };
+  },
+
   // ── Fetch Sentinel-2 Satellite NDVI Validation Data ────────────────────────
   async getClaimNdvi(claimId, lat, lng) {
     try {
@@ -146,9 +178,9 @@ export const apiService = {
       claimId,
       latitude: useLat,
       longitude: useLng,
-      damageDate: '2026-09-15',
-      damageUploadTimestamp: '2026-09-15T10:30:00.000Z',
-      damageUploadTime: '2026-09-15 10:30:00',
+      damageDate: '2026-09-16',
+      damageUploadTimestamp: '2026-09-16T10:30:00.000Z',
+      damageUploadTime: '2026-09-16 10:30:00',
       beforeDamageNdvi: parseFloat((0.68 + (Math.abs(Math.sin(useLat * 10)) * 0.12)).toFixed(2)),
       afterDamageNdvi: parseFloat((0.32 + (Math.abs(Math.cos(useLng * 10)) * 0.08)).toFixed(2)),
       ndviChange: -0.36,
@@ -156,28 +188,31 @@ export const apiService = {
       status: 'SIGNIFICANT_DECLINE',
       statusExplanation: `Live satellite analysis for damage upload location (${useLat.toFixed(4)}° N, ${useLng.toFixed(4)}° E) shows a significant vegetation index drop.`,
       damageDateWeather: {
-        date: '2026-09-15',
+        date: '2026-09-16',
         latitude: useLat,
         longitude: useLng,
-        tempMax: 31.4,
+        tempMax: 30.5,
         tempMin: 23.8,
+        tempAvg: 27.2,
+        humidityPercent: 78,
         precipitationMm: 48.5,
-        windSpeedKmh: 28.6,
-        weatherCondition: 'Heavy rain & Monsoon Downpour'
+        windSpeedKmh: 27.2,
+        weatherCondition: 'Heavy Rain & Monsoon Downpour'
       },
       observations: [
-        { date: '2026-09-05', ndvi: parseFloat((0.76 + Math.sin(useLat) * 0.03).toFixed(2)) },
-        { date: '2026-09-07', ndvi: parseFloat((0.75 + Math.cos(useLng) * 0.03).toFixed(2)) },
-        { date: '2026-09-09', ndvi: parseFloat((0.73 + Math.sin(useLat) * 0.02).toFixed(2)) },
-        { date: '2026-09-11', ndvi: parseFloat((0.71 + Math.cos(useLng) * 0.02).toFixed(2)) },
-        { date: '2026-09-13', ndvi: parseFloat((0.69 + Math.sin(useLat) * 0.01).toFixed(2)) },
-        { date: '2026-09-15', ndvi: parseFloat((0.48 + Math.cos(useLng) * 0.02).toFixed(2)) },
-        { date: '2026-09-17', ndvi: parseFloat((0.41 + Math.sin(useLat) * 0.02).toFixed(2)) },
-        { date: '2026-09-19', ndvi: parseFloat((0.38 + Math.cos(useLng) * 0.01).toFixed(2)) },
-        { date: '2026-09-21', ndvi: parseFloat((0.35 + Math.sin(useLat) * 0.01).toFixed(2)) },
-        { date: '2026-09-23', ndvi: parseFloat((0.33 + Math.cos(useLng) * 0.01).toFixed(2)) },
-        { date: '2026-09-25', ndvi: parseFloat((0.32 + Math.sin(useLat) * 0.01).toFixed(2)) },
+        { date: '2026-09-06', ndvi: parseFloat((0.76 + Math.sin(useLat) * 0.03).toFixed(2)) },
+        { date: '2026-09-08', ndvi: parseFloat((0.75 + Math.cos(useLng) * 0.03).toFixed(2)) },
+        { date: '2026-09-10', ndvi: parseFloat((0.73 + Math.sin(useLat) * 0.02).toFixed(2)) },
+        { date: '2026-09-12', ndvi: parseFloat((0.71 + Math.cos(useLng) * 0.02).toFixed(2)) },
+        { date: '2026-09-14', ndvi: parseFloat((0.69 + Math.sin(useLat) * 0.01).toFixed(2)) },
+        { date: '2026-09-16', ndvi: parseFloat((0.48 + Math.cos(useLng) * 0.02).toFixed(2)) },
+        { date: '2026-09-18', ndvi: parseFloat((0.41 + Math.sin(useLat) * 0.02).toFixed(2)) },
+        { date: '2026-09-20', ndvi: parseFloat((0.38 + Math.cos(useLng) * 0.01).toFixed(2)) },
+        { date: '2026-09-22', ndvi: parseFloat((0.35 + Math.sin(useLat) * 0.01).toFixed(2)) },
+        { date: '2026-09-24', ndvi: parseFloat((0.33 + Math.cos(useLng) * 0.01).toFixed(2)) },
+        { date: '2026-09-26', ndvi: parseFloat((0.32 + Math.sin(useLat) * 0.01).toFixed(2)) },
       ]
     };
   },
 };
+

@@ -1,3 +1,16 @@
+const defaultUploadWeather = {
+  date: "2026-09-16",
+  latitude: 11.0047,
+  longitude: 76.9617,
+  tempMax: 30.5,
+  tempMin: 23.8,
+  tempAvg: 27.2,
+  humidityPercent: 78,
+  precipitationMm: 48.5,
+  windSpeedKmh: 27.2,
+  weatherCondition: "Heavy Rain & Monsoon Downpour"
+};
+
 export const mockClaims = [
   {
     id: "CLM-2001",
@@ -9,7 +22,8 @@ export const mockClaims = [
     status: "Pending",
     description: "Heavy rainfall over three consecutive days left the field completely waterlogged. Nearly the entire plot is submerged and the crop has lodged severely. Water has not drained even after four days of dry weather.",
     estimatedLossPercent: 75,
-    submittedDate: "2026-03-02"
+    submittedDate: "2026-09-16",
+    uploadDateWeather: defaultUploadWeather
   },
   {
     id: "CLM-2002",
@@ -21,7 +35,15 @@ export const mockClaims = [
     status: "Under review",
     description: "Severe groundwater depletion and lack of canal release for 60 continuous days caused extensive leaf drying and cane shrinking. Growth has stunted completely across 3.5 acres of sugarcane crop.",
     estimatedLossPercent: 55,
-    submittedDate: "2026-02-24"
+    submittedDate: "2026-09-16",
+    uploadDateWeather: {
+      ...defaultUploadWeather,
+      weatherCondition: "High Heat & Severe Drought",
+      precipitationMm: 0.0,
+      tempMax: 36.8,
+      tempMin: 27.2,
+      humidityPercent: 42
+    }
   },
   {
     id: "CLM-2003",
@@ -33,7 +55,8 @@ export const mockClaims = [
     status: "Pending",
     description: "Widespread yellow stem borer attack infected the tillering stage paddy field despite recommended pesticide spray. Dead hearts are visible across more than 60% of the total 4-acre field area.",
     estimatedLossPercent: 65,
-    submittedDate: "2026-03-05"
+    submittedDate: "2026-09-16",
+    uploadDateWeather: defaultUploadWeather
   },
   {
     id: "CLM-2004",
@@ -43,9 +66,15 @@ export const mockClaims = [
     farmerId: "FRM-105",
     farmerName: "Selvi Muthu",
     status: "Approved",
-    description: "Unseasonal hailstorm on February 27 struck during the pegging and pod formation stage. Stems were snapped, leaves shredded, and developing pods destroyed by high-velocity hail impact.",
+    description: "Unseasonal hailstorm on September 16 struck during the pegging and pod formation stage. Stems were snapped, leaves shredded, and developing pods destroyed by high-velocity hail impact.",
     estimatedLossPercent: 80,
-    submittedDate: "2026-02-28"
+    submittedDate: "2026-09-16",
+    uploadDateWeather: {
+      ...defaultUploadWeather,
+      weatherCondition: "Thunderstorm with Hail",
+      precipitationMm: 54.2,
+      windSpeedKmh: 34.5
+    }
   },
   {
     id: "CLM-2005",
@@ -57,7 +86,8 @@ export const mockClaims = [
     status: "Rejected",
     description: "Severe yellow mosaic disease outbreak spread rapidly throughout the black gram crop. Plant leaves turned completely yellow and pods failed to set across the 2-acre plot.",
     estimatedLossPercent: 40,
-    submittedDate: "2026-02-20"
+    submittedDate: "2026-09-16",
+    uploadDateWeather: defaultUploadWeather
   },
   {
     id: "CLM-2006",
@@ -69,7 +99,13 @@ export const mockClaims = [
     status: "Pending",
     description: "Coastal squall winds exceeding 70 km/h knocked down full-height maize stalks at the tasseling stage. Root breakage and stalk bending affected over 50% of the standing crop.",
     estimatedLossPercent: 50,
-    submittedDate: "2026-03-04"
+    submittedDate: "2026-09-16",
+    uploadDateWeather: {
+      ...defaultUploadWeather,
+      weatherCondition: "Severe Squall & Heavy Rain",
+      windSpeedKmh: 58.4,
+      precipitationMm: 62.0
+    }
   },
   {
     id: "CLM-2007",
@@ -81,7 +117,8 @@ export const mockClaims = [
     status: "Under review",
     description: "Unexpected heavy downpour right before combine harvester entry caused cut grain bundles to float in muddy water. Grain sprouting and blackening occurred within 48 hours.",
     estimatedLossPercent: 60,
-    submittedDate: "2026-03-01"
+    submittedDate: "2026-09-16",
+    uploadDateWeather: defaultUploadWeather
   },
   {
     id: "CLM-2008",
@@ -91,8 +128,10 @@ export const mockClaims = [
     farmerId: "FRM-103",
     farmerName: "Arun Kumar R.",
     status: "Pending",
-    description: "Severe black-headed caterpillar and rodent surge damaged young tender coconut buttons and fronds across 5 acres. Immature nut drop rate exceeded 70% in February.",
+    description: "Severe black-headed caterpillar and rodent surge damaged young tender coconut buttons and fronds across 5 acres. Immature nut drop rate exceeded 70% in September.",
     estimatedLossPercent: 70,
-    submittedDate: "2026-03-06"
+    submittedDate: "2026-09-16",
+    uploadDateWeather: defaultUploadWeather
   }
 ];
+
