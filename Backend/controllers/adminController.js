@@ -424,13 +424,15 @@ const getAllClaims = async (req, res) => {
         'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?auto=format&fit=crop&w=600&q=80'
       ];
 
+      const serverBaseUrl = `${req.protocol}://${req.get('host')}`;
+
       const cropImages = [0, 1, 2, 3].map((idx) => {
         const rawP = cropPhotosFromDB[idx];
         let photoUrl = defaultCropPhotos[idx];
         let isUserUploaded = false;
         if (rawP && typeof rawP === 'string' && rawP.trim().length > 0) {
           if (rawP.startsWith('data:image') || rawP.startsWith('http') || rawP.startsWith('/uploads')) {
-            photoUrl = rawP.startsWith('/uploads') ? `http://localhost:5000${rawP}` : rawP;
+            photoUrl = rawP.startsWith('/uploads') ? `${serverBaseUrl}${rawP}` : rawP;
             isUserUploaded = true;
           }
         }
@@ -469,7 +471,7 @@ const getAllClaims = async (req, res) => {
         let isUserUploaded = false;
         if (rawP && typeof rawP === 'string' && rawP.trim().length > 0) {
           if (rawP.startsWith('data:image') || rawP.startsWith('http') || rawP.startsWith('/uploads')) {
-            photoUrl = rawP.startsWith('/uploads') ? `http://localhost:5000${rawP}` : rawP;
+            photoUrl = rawP.startsWith('/uploads') ? `${serverBaseUrl}${rawP}` : rawP;
             isUserUploaded = true;
           }
         }
@@ -478,6 +480,7 @@ const getAllClaims = async (req, res) => {
           isUserUploaded,
           label: damageLabels[idx],
           category: 'Claim Damage Inspection',
+
           date: formattedSubmitDate,
           cameraTag: isUserUploaded ? 'User Uploaded (Damage Photo)' : 'Camera System (Mobile Web)',
         };

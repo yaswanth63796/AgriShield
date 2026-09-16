@@ -155,6 +155,15 @@ const getClaimById = async (req, res) => {
       success: true,
       claim
     });
+  } catch (error) {
+    console.error('Error fetching claim:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Server error occurred while fetching claim'
+    });
+  }
+};
+
 /**
  * @desc    Update claim status directly
  * @route   PUT /api/claims/:id/status
@@ -201,4 +210,3 @@ const updateClaimStatus = async (req, res) => {
 };
 
 module.exports = { submitClaim, getMyClaims, getClaimById, updateClaimStatus };
-

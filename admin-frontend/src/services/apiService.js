@@ -2,10 +2,13 @@ import { mockFarmers } from '../data/farmers';
 import { mockRegisteredCrops } from '../data/registeredCrops';
 import { mockClaims } from '../data/claims';
 
-const API_BASE_URL = 'http://localhost:5000/api/admin';
+const BASE_HOST = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || `${BASE_HOST}/api/admin`;
+
 
 export const apiService = {
   // ── Fetch Admin Dashboard Stats ─────────────────────────────────────────────
+
   async getDashboardStats() {
     try {
       const response = await fetch(`${API_BASE_URL}/dashboard-stats`, {
@@ -161,7 +164,8 @@ export const apiService = {
     try {
       const useLat = lat ? lat : 11.0045;
       const useLng = lng ? lng : 76.9616;
-      const response = await fetch(`http://localhost:5000/api/weather/historical?lat=${useLat}&lon=${useLng}&date=${date}`, {
+      const response = await fetch(`${BASE_HOST}/api/weather/historical?lat=${useLat}&lon=${useLng}&date=${date}`, {
+
         signal: AbortSignal.timeout(6000),
       });
       if (response.ok) {
