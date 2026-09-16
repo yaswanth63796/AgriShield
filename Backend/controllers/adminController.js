@@ -563,7 +563,7 @@ const getClaimNdviValidation = async (req, res) => {
           ? Number(claim.longitude)
           : (cropObj && cropObj.longitude !== undefined ? Number(cropObj.longitude) : 76.9616));
 
-    const damageDate = claim ? (claim.createdAt || (cropObj ? cropObj.sowingDate : new Date())) : new Date();
+    const damageDate = claim ? (claim.damageDate || claim.createdAt || (cropObj ? cropObj.sowingDate : new Date())) : new Date();
     const cleanClaimId = claim ? `CLM-${claim._id.toString().substring(18).toUpperCase()}` : claimId;
 
     const result = await ndviService.analyzeClaimNdvi(

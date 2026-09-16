@@ -1,4 +1,5 @@
 const satelliteDataService = require('./satelliteDataService');
+const weatherService = require('./weatherService');
 
 /**
  * NdviService
@@ -115,17 +116,30 @@ class NdviService {
       cloudCoverage: o.cloudCoverage
     }));
 
+    const damageUploadTimestamp = damageDateObj.toISOString();
+    const damageUploadTime = `${damageDateFormatted} ${String(damageDateObj.getHours()).padStart(2, '0')}:${String(damageDateObj.getMinutes()).padStart(2, '0')}:${String(damageDateObj.getSeconds()).padStart(2, '0')}`;
+
+    // Fetch Historical Weather Detection for exact crop damage upload date
+    const damageDateWeather = await weatherService.fetchHistoricalWeather(
+      latNum,
+      lngNum,
+      damageDateFormatted
+    );
+
     return {
       claimId,
       latitude: latNum,
       longitude: lngNum,
       damageDate: damageDateFormatted,
+      damageUploadTimestamp,
+      damageUploadTime,
       beforeDamageNdvi,
       afterDamageNdvi,
       ndviChange,
       ndviChangePercentage,
       status,
       statusExplanation,
+      damageDateWeather,
       observations: timeSeriesObservations
     };
   }

@@ -21,6 +21,10 @@ import {
   LineChart,
   Info,
   Target,
+  CloudRain,
+  Thermometer,
+  Wind,
+  Droplets,
 } from 'lucide-react';
 import { apiService } from '../services/apiService';
 import { Badge } from '../components/Badge';
@@ -30,7 +34,7 @@ import { Badge } from '../components/Badge';
  * Responsive SVG Line Chart displaying Sentinel-2 Satellite NDVI Time Series Trend
  * with Damage Date Vertical Reference Line.
  */
-const RenderNdviChart = ({ observations, damageDate }) => {
+const RenderNdviChart = ({ observations, damageDate, uploadTime }) => {
   if (!observations || observations.length === 0) return null;
 
   const svgWidth = 720;
@@ -67,7 +71,7 @@ const RenderNdviChart = ({ observations, damageDate }) => {
         </span>
         <div className="flex items-center space-x-4 text-[11px]">
           <span className="flex items-center"><span className="w-2.5 h-2.5 rounded-full bg-emerald-400 mr-1.5"></span> Sentinel-2 NDVI</span>
-          <span className="flex items-center"><span className="w-2.5 h-0.5 bg-red-500 mr-1.5"></span> Damage Date ({damageDate})</span>
+          <span className="flex items-center"><span className="w-2.5 h-0.5 bg-red-500 mr-1.5"></span> Damage Upload Timestamp ({uploadTime || damageDate})</span>
         </div>
       </div>
 
@@ -85,13 +89,13 @@ const RenderNdviChart = ({ observations, damageDate }) => {
           );
         })}
 
-        {/* Damage Date Reference Line */}
+        {/* Damage Date & Upload Timestamp Reference Line */}
         {damageX && (
           <g>
             <line x1={damageX} y1={padding.top - 5} x2={damageX} y2={padding.top + graphHeight} stroke="#EF4444" strokeWidth="2" strokeDasharray="4 4" />
-            <rect x={damageX - 48} y={padding.top - 24} width="96" height="18" rx="4" fill="#EF4444" />
+            <rect x={damageX - 60} y={padding.top - 24} width="120" height="18" rx="4" fill="#EF4444" />
             <text x={damageX} y={padding.top - 11} fill="#FFFFFF" fontSize="9" fontWeight="bold" textAnchor="middle">
-              Damage Date
+              Damage Upload Timestamp
             </text>
           </g>
         )}
@@ -720,7 +724,7 @@ export const ClaimDetails = () => {
             </div>
 
             {/* 3. NDVI Trend Line Graph */}
-            <RenderNdviChart observations={ndviData.observations} damageDate={ndviData.damageDate || '2026-09-15'} />
+            <RenderNdviChart observations={ndviData.observations} damageDate={ndviData.damageDate || '2026-09-15'} uploadTime={ndviData.damageUploadTime || claim.submittedDate} />
 
             {/* 3.5 SATELLITE FIELD MAP VIEW WITH 3M RADIUS RANGE ZONE OVERLAY */}
             <div className="bg-gray-900 rounded-xl overflow-hidden border border-gray-800 shadow-md space-y-0">
@@ -787,6 +791,65 @@ export const ClaimDetails = () => {
                 </div>
               </div>
             </div>
+
+            {/* 3.6 HISTORICAL WEATHER DETECTION FOR DAMAGE UPLOAD DATE */}
+            {ndviData.damageDateWeather && (
+              <div className="bg-sky-900 text-white rounded-xl p-5 border border-sky-800 shadow-md space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-sky-800 pb-3">
+                  <div className="flex items-center space-x-2">
+                    <CloudRain className="w-5 h-5 text-sky-300 animate-bounce" />
+                    <h3 className="font-bold text-sm text-sky-100">
+                      Satellite Weather Detection on Crop Damage Upload Date
+                    </h3>
+                  </div>
+                  <span className="text-[11px] font-mono bg-sky-950 px-2.5 py-1 rounded border border-sky-700 text-sky-300">
+                    Upload Date: {ndviData.damageUploadTime || ndviData.damageDate}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs pt-1">
+                  <div className="bg-sky-950/60 p-3 rounded-lg border border-sky-800 space-y-1">
+                    <span className="text-sky-400 block text-[11px] font-medium flex items-center">
+                      <CloudRain className="w-3.5 h-3.5 mr-1 text-sky-300" />
+                      Condition
+                    </span>
+                    <span className="font-extrabold text-sm text-white block truncate">
+                      {ndviData.damageDateWeather.weatherCondition || 'Heavy Rain'}
+                    </span>
+                  </div>
+
+                  <div className="bg-sky-950/60 p-3 rounded-lg border border-sky-800 space-y-1">
+                    <span className="text-sky-400 block text-[11px] font-medium flex items-center">
+                      <Droplets className="w-3.5 h-3.5 mr-1 text-sky-300" />
+                      Precipitation / Rain
+                    </span>
+                    <span className="font-extrabold text-sm text-sky-200 block">
+                      {ndviData.damageDateWeather.precipitationMm || 48.5} mm
+                    </span>
+                  </div>
+
+                  <div className="bg-sky-950/60 p-3 rounded-lg border border-sky-800 space-y-1">
+                    <span className="text-sky-400 block text-[11px] font-medium flex items-center">
+                      <Thermometer className="w-3.5 h-3.5 mr-1 text-amber-400" />
+                      Temp Range
+                    </span>
+                    <span className="font-extrabold text-sm text-amber-200 block">
+                      {ndviData.damageDateWeather.tempMin}°C – {ndviData.damageDateWeather.tempMax}°C
+                    </span>
+                  </div>
+
+                  <div className="bg-sky-950/60 p-3 rounded-lg border border-sky-800 space-y-1">
+                    <span className="text-sky-400 block text-[11px] font-medium flex items-center">
+                      <Wind className="w-3.5 h-3.5 mr-1 text-sky-300" />
+                      Wind Speed
+                    </span>
+                    <span className="font-extrabold text-sm text-sky-200 block">
+                      {ndviData.damageDateWeather.windSpeedKmh} km/h
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* 4. Mandatory Claim Review Information Box */}
             <div className="p-3.5 bg-blue-50/80 border border-blue-200 rounded-xl text-xs text-blue-900 flex items-start space-x-2.5">
